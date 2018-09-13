@@ -90,7 +90,7 @@ int main()
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
           }
-          float x_gt;
+        float x_gt;
     	  float y_gt;
     	  float vx_gt;
     	  float vy_gt;
@@ -109,7 +109,7 @@ int main()
     	  fusionEKF.ProcessMeasurement(meas_package);    	  
 
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
-
+        cout << "Processed measurement.. " <<endl;
     	  VectorXd estimate(4);
 
     	  double p_x = fusionEKF.ekf_.x_(0);
