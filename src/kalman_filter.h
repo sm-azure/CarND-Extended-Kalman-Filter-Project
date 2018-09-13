@@ -1,6 +1,7 @@
 #ifndef KALMAN_FILTER_H_
 #define KALMAN_FILTER_H_
 #include "Eigen/Dense"
+#include "tools.h"
 
 class KalmanFilter {
 public:
@@ -24,6 +25,8 @@ public:
   Eigen::MatrixXd R_;
 
   Eigen::MatrixXd I_;
+
+  Tools tools;
   /**
    * Constructor
    */

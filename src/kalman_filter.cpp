@@ -1,4 +1,5 @@
 #include "kalman_filter.h"
+#include <iostream>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -6,8 +7,10 @@ using Eigen::VectorXd;
 // Please note that the Eigen library does not initialize 
 // VectorXd or MatrixXd objects with zeros upon creation.
 
+using namespace std;
+
 KalmanFilter::KalmanFilter() {
-  I_ = MatrixXd::Identity(2, 2);
+  I_ = MatrixXd::Identity(4, 4);
 }
 
 KalmanFilter::~KalmanFilter() {}
@@ -29,13 +32,10 @@ void KalmanFilter::Predict() {
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
-  VectorXd y = VectorXd(2);
-  MatrixXd S_;
-  MatrixXd K_;
 
-  y = z - H_ * x_;
-  S_ = H_*P_*H_.transpose() + R_;
-  K_ = P_ * H_.transpose()*S_.inverse();
+  VectorXd y = z - H_ * x_;
+  MatrixXd S_ = H_*P_*H_.transpose() + R_;
+  MatrixXd K_ = P_ * H_.transpose()*S_.inverse();
   x_ = x_ + (K_ * y);
   P_ = (I_ - K_*H_) * P_;
 }
@@ -45,33 +45,44 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
-  MatrixXd Hj(3,4);
 
-	//recover state parameters
-	float px = z(0);
-	float py = z(1);
-	float vx = z(2);
-	float vy = z(3);
+  VectorXd z_ = VectorXd(3);
+  z_ << z(0), z(1), z(2);
+  float px = x_(0);
+	float py = x_(1);
+	float vx = x_(2);
+	float vy = x_(3);
 
   float div = px*px + py*py;
 
-	//TODO: YOUR CODE HERE 
- 
-	//check division by zero
-	
-	if(div < 0.0001){
-	    // Hj << 0,0,0,0,
-      // 0,0,0,0,
-      // 0,0,0,0;
-
-      return;
+  if(div < 0.0001){
+      cout << "Small div!!!--------------------------------------" << endl;
 	} else{
-    
+    // calculate rho, phi and rhodot
+    VectorXd h_x_ = VectorXd(3);
+    VectorXd y = VectorXd(3);
+    MatrixXd S_;
+    MatrixXd K_;
 
-    //compute the Jacobian matrix
-    Hj << px / sqrt(div), py/sqrt(div), 0,0,
-        -py/div, px/div, 0,0,
-        py * (vx*py - vy*px) / pow(div, 3/2), px* (vy*px - vx*py) / pow(div, 3/2), px/sqrt(div), py/sqrt(div);
+    MatrixXd Hj = tools.CalculateJacobian(x_);
+    h_x_ << sqrt(div), atan2(py, px), (px*vx + py*vy)/sqrt(div);
+    //validate phi is between -pi and +pi
+    
+    y = z_ - h_x_;
+    if (y(1) > 3.1415 ){
+      cout << "=============================================================== Booommmmmmmmmmmmmmm" << endl;
+      y(1) = y(1) - 2*3.1415;
+    }
+    if (y(1) < -3.1415 ){
+      cout << "=============================================================== Booommmmmmmmmmmmmmm" << endl;
+      y(1) = y(1) + 2*3.1415;
+    }
+
+    S_ = Hj*P_*Hj.transpose() + R_;
+    K_ = P_ * Hj.transpose()*S_.inverse();
+    x_ = x_ + (K_ * y);
+    P_ = (I_ - K_*Hj) * P_;
   }
-	return;    
+
+   
 }

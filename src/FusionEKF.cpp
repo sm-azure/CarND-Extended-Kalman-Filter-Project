@@ -41,8 +41,8 @@ FusionEKF::FusionEKF() {
     * Finish initializing the FusionEKF.
     * Set the process and measurement noises
   */
-	H_laser_ << 1, 0, 0, 0,
-			  0, 1, 0, 0;
+	H_laser_ << 1, 0, 0,0,
+			  0, 1,0,0;
 
   
   F_ << 1, 0, 1, 0,
@@ -72,7 +72,7 @@ FusionEKF::~FusionEKF() {}
 
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
-  cout << "ProcessMeasurement started!"<<endl;
+  cout << "------------  new data------------------" << endl;
   /*****************************************************************************
    *  Initialization
    ****************************************************************************/
@@ -85,8 +85,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     */
     // first measurement
     cout << "EKF Init: " << endl;
-    ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 1, 1, 1, 1;
+    //ekf_.x_ = VectorXd(4);
+    //ekf_.x_ << 1, 1, 1, 1;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
@@ -95,8 +95,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
       float px = measurement_pack.raw_measurements_[0]* cos(measurement_pack.raw_measurements_[1]);
       float py = measurement_pack.raw_measurements_[0]* sin(measurement_pack.raw_measurements_[1]);
-      float vx = measurement_pack.raw_measurements_[2]* cos(measurement_pack.raw_measurements_[1]);
-      float vy = measurement_pack.raw_measurements_[2]* sin(measurement_pack.raw_measurements_[1]);
+      //float vx = measurement_pack.raw_measurements_[2]* cos(measurement_pack.raw_measurements_[1]);
+      //float vy = measurement_pack.raw_measurements_[2]* sin(measurement_pack.raw_measurements_[1]);
+      float vx = 0;
+      float vy = 0;
       cout <<"Radar Init:" <<endl;
       cout << px <<"," << py <<"," << vx <<"," << vy <<endl;
       ekf_.x_ << px,py,vx,vy;
@@ -115,12 +117,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       cout <<"Lidar Init Complete" <<endl;
     }
 
-  // done initializing, no need to predict or update
-  cout<< "Completed Init 1" <<endl;
-  is_initialized_ = true;
-  cout<< "Completed Init 2" <<endl;
-  //previous_timestamp_ = measurement_pack.timestamp_;
-  cout<< "Completed Init";
+    // done initializing, no need to predict or update
+    cout<< "Completed Init 1" <<endl;
+    is_initialized_ = true;
+    cout<< "Completed Init 2" <<endl;
+    previous_timestamp_ = measurement_pack.timestamp_;
+    cout<< "Completed Init" <<endl;
+    return;
   }
 
   /*****************************************************************************
@@ -138,6 +141,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   cout<< "Trying to predict" <<endl;
 	float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
+  cout <<"Current:" << ekf_.x_[0] << "," << ekf_.x_[1] << "," << ekf_.x_[2] << "," << ekf_.x_[3] <<endl;
+  if(dt == 0){
+    return;
+  }
 	previous_timestamp_ = measurement_pack.timestamp_;
 	
   ekf_.F_(0,2) = dt;
@@ -157,8 +164,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 	         0, dt3*noise_ay/2, 0, dt2*noise_ay;
 
   ekf_.Predict();
-  cout << "Post prediction: " <<endl;
-  cout << ekf_.x_[0] << "," << ekf_.x_[1] << "," << ekf_.x_[2] << "," << ekf_.x_[3] <<endl;
+  cout << "Predict:" << ekf_.x_[0] << "," << ekf_.x_[1] << "," << ekf_.x_[2] << "," << ekf_.x_[3] <<endl;
+  cout << "dt: " << dt <<endl;
 
   /*****************************************************************************
    *  Update
@@ -174,13 +181,22 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // Radar updates
     //Radar measurements are in (rho, theta and rho dot). Convert current predictions to this format
     cout << "Update radar" <<endl;
-
+    ekf_.R_ = R_radar_;
+    ekf_.UpdateEKF(measurement_pack.raw_measurements_);
+    cout << "Updated:" << ekf_.x_[0] << "," << ekf_.x_[1] << "," << ekf_.x_[2] << "," << ekf_.x_[3] <<endl;
+    cout << "Raw:" << measurement_pack.raw_measurements_[0] << "," << measurement_pack.raw_measurements_[1] << "," << measurement_pack.raw_measurements_[2] <<endl;
+    cout << "Finish Update radar" <<endl;
   } else {
     // Laser updates
     cout << "Update laser" <<endl;
+    ekf_.R_ = R_laser_;
+    ekf_.Update(measurement_pack.raw_measurements_);
+    cout << "Updated:" << ekf_.x_[0] << "," << ekf_.x_[1] << "," << ekf_.x_[2] << "," << ekf_.x_[3] <<endl;
+    cout << "Raw:" << measurement_pack.raw_measurements_[0] << "," << measurement_pack.raw_measurements_[1] <<endl;
+    cout << "Finish Update laser" <<endl;
   }
 
   // print the output
-  cout << "x_ = " << ekf_.x_ << endl;
-  cout << "P_ = " << ekf_.P_ << endl;
+  //cout << "x_ = " << ekf_.x_ << endl;
+  //cout << "P_ = " << ekf_.P_ << endl;
 }

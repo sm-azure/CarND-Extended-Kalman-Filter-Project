@@ -109,7 +109,9 @@ int main()
     	  fusionEKF.ProcessMeasurement(meas_package);    	  
 
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
-        cout << "Processed measurement.. " <<endl;
+        cout << "GT:" << gt_values[0] << "," << gt_values[1] << "," << gt_values[2] << "," << gt_values[3] <<endl;
+        cout << "Number of estimates:" << estimations.size() <<endl;
+      
     	  VectorXd estimate(4);
 
     	  double p_x = fusionEKF.ekf_.x_(0);
@@ -123,8 +125,9 @@ int main()
     	  estimate(3) = v2;
     	  
     	  estimations.push_back(estimate);
-
+      
     	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+        cout << "Processed rmse: " << RMSE <<endl;
 
           json msgJson;
           msgJson["estimate_x"] = p_x;
@@ -136,7 +139,7 @@ int main()
           auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
           // std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-	  
+          cout << "Sent.... " <<endl;
         }
       } else {
         
