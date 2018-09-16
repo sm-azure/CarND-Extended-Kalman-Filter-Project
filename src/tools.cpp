@@ -64,12 +64,11 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
       cout << "Small div in toosl..";
       std::cin.ignore();
       return Hj;
-	} else{
-    //compute the Jacobian matrix
-    Hj << px / sqrt(div), py/sqrt(div), 0,0,
-        -py/div, px/div, 0,0,
-        py * (vx*py - vy*px) / pow(div, 3/2), px* (vy*px - vx*py) / pow(div, 3/2), px/sqrt(div), py/sqrt(div);
-  }
+	} 
+  //compute the Jacobian matrix
+  Hj << px / sqrt(div), py/sqrt(div), 0,0,
+      -py/div, px/div, 0,0,
+      py * (vx*py - vy*px) / pow(div, 3.0/2.0), px* (vy*px - vx*py) / pow(div, 3.0/2.0), px/sqrt(div), py/sqrt(div);
+
 	return Hj;  
- 
 }
