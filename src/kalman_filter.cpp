@@ -55,8 +55,9 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
   float div = px*px + py*py;
 
-  if(div < 0.0001){
+  if(sqrt(div < 0.0001)){
       cout << "Small div!!!--------------------------------------" << endl;
+      std::cin.ignore();
 	} else{
     // calculate rho, phi and rhodot
     VectorXd h_x_ = VectorXd(3);
@@ -67,15 +68,16 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     MatrixXd Hj = tools.CalculateJacobian(x_);
     h_x_ << sqrt(div), atan2(py, px), (px*vx + py*vy)/sqrt(div);
     //validate phi is between -pi and +pi
-    
     y = z_ - h_x_;
-    if (y(1) > 3.1415 ){
-      cout << "=============================================================== Booommmmmmmmmmmmmmm" << endl;
-      y(1) = y(1) - 2*3.1415;
-    }
-    if (y(1) < -3.1415 ){
-      cout << "=============================================================== Booommmmmmmmmmmmmmm" << endl;
-      y(1) = y(1) + 2*3.1415;
+
+    while((y(1) > 3.1415 ) ||  (y(1) < -3.1415 ) )
+    {
+      if (y(1) > 3.1415 ){
+        y(1) = y(1) - 2*3.1415;
+      }
+      if (y(1) < -3.1415 ){
+        y(1) = y(1) + 2*3.1415;
+      }
     }
 
     S_ = Hj*P_*Hj.transpose() + R_;

@@ -95,10 +95,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
       float px = measurement_pack.raw_measurements_[0]* cos(measurement_pack.raw_measurements_[1]);
       float py = measurement_pack.raw_measurements_[0]* sin(measurement_pack.raw_measurements_[1]);
-      //float vx = measurement_pack.raw_measurements_[2]* cos(measurement_pack.raw_measurements_[1]);
-      //float vy = measurement_pack.raw_measurements_[2]* sin(measurement_pack.raw_measurements_[1]);
-      float vx = 0;
-      float vy = 0;
+      float vx = measurement_pack.raw_measurements_[2]* cos(measurement_pack.raw_measurements_[1]);
+      float vy = measurement_pack.raw_measurements_[2]* sin(measurement_pack.raw_measurements_[1]);
+      //float vx = 0;
+      //  float vy = 0;
       cout <<"Radar Init:" <<endl;
       cout << px <<"," << py <<"," << vx <<"," << vy <<endl;
       ekf_.x_ << px,py,vx,vy;
