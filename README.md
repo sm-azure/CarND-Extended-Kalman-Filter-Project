@@ -12,3 +12,5 @@ No changes have been made to the CMakeLists.txt. Simple `cmake` and `make` shoul
 * For dataset 1, the RMSE (X,Y, VX,VY) are 0.0973, 0.0855, 0.4513, 0.4399 which is under the expected .11, .11, 0.52, 0.52 values.
 * For dataset 2, the RMSE (X,Y, VX,VY) are 0.0726, 0.0967, 0.4579, 0.4966 which is under the expected .11, .11, 0.52, 0.52 values.
 
+## Algorithmic correctness and efficiency
+Code has been checked for algorithmic correctness. There does not seem to be any un-necessary code either. 
